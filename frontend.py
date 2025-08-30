@@ -18,7 +18,22 @@ if uploaded_file is not None:
             if "error" in result:
                 st.error(result["error"])
             else:
-                st.success(f"Prediction: **{result['label']}**")
+                label = result["label"].upper()
+
+                # Color + Emoji output
+                if label == "SPAM":
+                    st.markdown(
+                        f"<h3 style='color:red;'>🚫 Prediction: {label}</h3>",
+                        unsafe_allow_html=True,
+                    )
+                elif label == "HAM":
+                    st.markdown(
+                        f"<h3 style='color:green;'>✅ Prediction: {label}</h3>",
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.warning(f"Prediction: {label}")
+
                 st.write(f"Text length: {result['text_length']}")
                 st.write(f"Preview of extracted text: {result['preview']}")
         else:
