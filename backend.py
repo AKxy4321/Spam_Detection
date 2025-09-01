@@ -1,6 +1,7 @@
-import os
+import io
 
 from flask import Flask, jsonify, request
+from PyPDF2 import PdfReader
 
 from predict_pdf_module import predict_pdf
 
@@ -13,20 +14,25 @@ def predict():
         return jsonify({"error": "No file provided"}), 400
 
     file = request.files["file"]
-    temp_path = "temp.pdf"
-    file.save(temp_path)
 
     try:
-        result = predict_pdf(temp_path)
-        return jsonify(result)
+        # Read PDF into memory instead of saving to disk
+        pdf_bytes = file.read()
+        reader = PdfReader(io.BytesIO(pdf_bytes))
+
+        # Extract text only from the first page
+        first_page = reader.pages[0]
+        text = first_page.extract_text() or ""
+
+        result = predict_pdf(text)
+
+        return jsonify(result), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        # Delete the temporary file
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        return jsonify({"error": f"Failed to read PDF: {e}"}), 500
 
 
 if __name__ == "__main__":
     print("Starting Backend Server")
-    app.run(port=5000, debug=True)
+
+    # debug == true slows down the server -- keep it only when you need to debug
+    app.run(port=5000, debug=False)

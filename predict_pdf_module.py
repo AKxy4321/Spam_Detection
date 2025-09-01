@@ -8,12 +8,11 @@ import joblib
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import SnowballStemmer, WordNetLemmatizer
-from PyPDF2 import PdfReader
 
 # Ensure NLTK resources
-nltk.download("punkt", quiet=True)
-nltk.download("stopwords", quiet=True)
-nltk.download("wordnet", quiet=True)
+# nltk.download("punkt", quiet=True)
+# nltk.download("stopwords", quiet=True)
+# nltk.download("wordnet", quiet=True)
 
 # Initialize NLP tools
 stopwords_set = set(stopwords.words("english"))
@@ -78,21 +77,12 @@ pipeline_nb = joblib.load(spam_pipeline_path)
 
 
 # ----------------- PDF prediction -----------------
-def predict_pdf(path: str, label_map={0: "HAM", 1: "SPAM"}) -> dict:
+def predict_pdf(text: str, label_map={0: "HAM", 1: "SPAM"}) -> dict:
     """
-    Extract text from PDF, preprocess, vectorize, and predict spam/ham.
+    Preprocess, vectorize, and predict spam/ham.
 
     Returns a dict with prediction info.
     """
-    try:
-        reader = PdfReader(path)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text() or ""
-            break  # only first page
-    except Exception as e:
-        return {"error": f"Failed to read PDF: {e}"}
-
     processed_text = " ".join(pipeline_nb.preprocess([text])[0].split())
     if not processed_text.strip():
         return {"error": "No valid text extracted from PDF"}
